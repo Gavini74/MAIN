@@ -1,0 +1,790 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "MAIN API Documentation",
+	  "description": "MAIN is the platform which NEWS UK teams use to maintain the access, identity and monetisation of their apps and websites. Hence:\n\n __M__onetisation,\n\n__A__ccess and\n\n__I__dentity for\n\n__N__ews UK =\n\n__MAIN.__ \n\n __Identity__ services include Authorisation and Authentication, Data and Content Profiles, and Propensity to buy/next best actions. \n\n __Access__ services include the Advanced Access Decision Engine, Entitlements, and Non-monetary value exchange. \n\n __Monetisation__ services include Audience and Market Development, Payments and Billing, Customer Lifecycle Management, and Finance Reporting and Reconciliation.\n\n The MAIN API is the interface between the NEWS UK teams' websites and applications, and the MAIN platform.",
+    "version": "1.0",
+	  "x-logo": {
+      "url": "http://www.ihelp.org.uk/NUK-28-6%20MAIN%20Logo%20v1.png",
+      "backgroundColor": "#FFFFFF",
+      "altText": "MAIN logo",
+	  "href": "http://www.ihelp.org.uk/api.html"
+    },
+    "contact": {
+      "name": "Craig Bilner",
+      "url": "https://github.com/craigbilner",
+      "email": "craig.bilner@news.co.uk"
+    }
+  },
+  "host": "reference.digieng-dev.ntch.co.uk",
+  "basePath": "/reference",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v1/access": {
+      "post": {
+        "description": "Response body includes property 'lifetime' which stores session token (also referred to as lifetime). For example:\n\n`Cg4IARABGAQiBgjj8evmBRIHCAESA2FiYxoDBQMAIgMIkBw=`\n\nThe value is then stored by the client and sent in a body on each subsequent request. The session token encodes visit metadata, e.g. tracking number of seen articles and how many remaining free articles user is allowed to see before seeing flexible paywall.\n\nYou can pass an extra `Config-Access-Free-Entities` header to overwrite the visit configuration. For example, if you add this header to your request:\n\n`Config-Access-Free-Entities: 4,2,0`\n\nThen it will be used to overwrite default visit configuration which the service reads from environment variables.\n\nFull list of headers you can set to overwrite default configured behaviour:\n\n* `Config-Access-Metering-Type` (default is 0 - metering per visit, set to 1 for metering by time)\n* `Config-Access-Free-Entities` (pass comma delimited list of integers, e.g.: `4,2,0`)\n* `Config-Access-Lifetime-Free-Entities` (integer)\n* `Config-Access-Visit-Duration` (duration with units, e.g. 1800s)\n* `Config-Access-Cookie-Max-Age` (duration with units, e.g. 2160h)\n* `Config-Access-Refresh-Interval` (duration with units, e.g. 720h)\n* `Config-Access-Refresh-Type` (default is 0 - uses refresh interval, set to 1 for calendar day refresh)\n* `Config-Access-Refresh-Day` (integer - calendar month when view budget will refresh, must be in range \u003c1;31\u003e)\n\n\nThe visit configuration is stored in the lifetime token, therefor using this header is only relevant for a new anonymous user (without access cookie). On each subsequent request including the access cookie, the visit configuration stored in the token will be used.",
+        "operationId": "GetAccess",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/mainAccessResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "schema": {}
+          },
+          "404": {
+            "description": "Returned when the entity resource does not exist.",
+            "schema": {}
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/mainAccessRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Access Decision Engine"
+        ],
+        "externalDocs": {
+          "description": "Read more",
+          "url": "https://github.com/newscorp-ghfb/main/blob/master/README.md"
+        }
+      }
+    },
+    "/api/v1/configuration": {
+      "get": {
+        "description": "Configuration includes properties such as number of visits, free articles per visit, visit duration etc.",
+        "operationId": "GetConfig",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/mainConfigResponse"
+            }
+          }
+        },
+        "tags": [
+          "Access Decision Engine"
+        ]
+      }
+    },
+    "/api/v1/identity/logout": {
+      "post": {
+        "description": "Log out current user. The access tocken should be provided via header.",
+        "operationId": "Logout",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/mainResultResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "schema": {}
+          }
+        },
+        "tags": [
+          "User"
+        ],
+        "externalDocs": {
+          "description": "Read more",
+          "url": "https://github.com/newscorp-ghfb/main/blob/master/README.md"
+        }
+      }
+    },
+    "/api/v1/users": {
+      "post": {
+        "description": "Creates a new user in Auth0 backend.",
+        "operationId": "RegisterUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/mainRegisterUserResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "schema": {}
+          },
+          "409": {
+            "description": "User already exists",
+            "schema": {}
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/mainRegisterUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "User"
+        ],
+        "externalDocs": {
+          "description": "Read more",
+          "url": "https://github.com/newscorp-ghfb/main/blob/master/README.md"
+        }
+      }
+    },
+    "/api/v1/users/delete": {
+      "post": {
+        "description": "Delete a user.",
+        "operationId": "DeleteUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/mainVoid"
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "schema": {}
+          },
+          "404": {
+            "description": "Returned when the entity resource (user) does not exist.",
+            "schema": {}
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/mainDeleteUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "User"
+        ],
+        "externalDocs": {
+          "description": "Read more",
+          "url": "https://github.com/newscorp-ghfb/main/blob/master/README.md"
+        }
+      }
+    },
+    "/api/v1/users/login": {
+      "post": {
+        "description": "Simple login with email and password. In case of success it returns the access tocken to be used by the whole application.",
+        "operationId": "LoginUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/mainLoginUserResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request.",
+            "schema": {}
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/mainLoginUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "User"
+        ],
+        "externalDocs": {
+          "description": "Read more",
+          "url": "https://github.com/newscorp-ghfb/main/blob/master/README.md"
+        }
+      }
+    },
+    "/api/v1/version": {
+      "get": {
+        "description": "Version of the service",
+        "operationId": "GetVersion",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/mainVersionResponse"
+            }
+          }
+        },
+        "tags": [
+          "Main Service"
+        ]
+      }
+    },
+    "/healthz": {
+      "get": {
+        "description": "A standard healthcheck endpoint.",
+        "operationId": "Healthcheck",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/mainHealthcheckResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "service",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Main Service"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "mainAccess": {
+      "type": "object",
+      "properties": {
+        "decision": {
+          "type": "string"
+        },
+        "reason": {
+          "$ref": "#/definitions/mainReason"
+        }
+      },
+      "description": "Defines access decision (allowed or denied access and why).",
+      "title": "Access",
+      "required": [
+        "entity"
+      ]
+    },
+    "mainAccessConfig": {
+      "type": "object",
+      "properties": {
+        "visits": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mainAccessVisitConfig"
+          }
+        },
+        "visit_duration": {
+          "type": "string"
+        },
+        "refresh_interval": {
+          "type": "string"
+        },
+        "lifetime_free_entities_limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "metering_type": {
+          "$ref": "#/definitions/mainMeteringType"
+        },
+        "refresh_type": {
+          "$ref": "#/definitions/mainRefreshType"
+        },
+        "refresh_day": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "mainAccessRequest": {
+      "type": "object",
+      "example": {
+        "entity": {
+          "type": 1,
+          "id": "abcd"
+        },
+        "lifetime": "e70784ad67ef46a7b03fbc3f7070306c"
+      },
+      "properties": {
+        "entity": {
+          "$ref": "#/definitions/mainEntity"
+        },
+        "lifetime": {
+          "type": "string"
+        }
+      },
+      "description": "Defines access request payload.",
+      "title": "AccessRequest",
+      "required": [
+        "entity",
+        "lifetime"
+      ]
+    },
+    "mainAccessResponse": {
+      "type": "object",
+      "example": {
+        "entity": {
+          "type": 1,
+          "id": "abcd"
+        },
+        "access": {
+          "decision": "ALLOWED",
+          "reason": {
+            "code": "FREE_ARTICLES"
+          }
+        },
+        "visit": {
+          "number": 1,
+          "used": 1,
+          "remaining": 2,
+          "expires_at": "2019-06-14T12:20:41.868392Z"
+        },
+        "experiments": [
+          {
+            "id": "experiment_0",
+            "variant_id": "group_2"
+          }
+        ],
+        "lifetime": "fea07ede72c342748297adab508eaf44",
+        "denials": {
+          "this_visit": 0,
+          "since_last_refresh": 0,
+          "total": 0
+        }
+      },
+      "properties": {
+        "entity": {
+          "$ref": "#/definitions/mainEntity"
+        },
+        "access": {
+          "$ref": "#/definitions/mainAccess"
+        },
+        "visit": {
+          "$ref": "#/definitions/mainVisit"
+        },
+        "experiments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mainExperiment"
+          }
+        },
+        "lifetime": {
+          "type": "string"
+        },
+        "denials": {
+          "$ref": "#/definitions/mainDenials"
+        }
+      },
+      "description": "Defines response to an access request.",
+      "title": "AccessResponse",
+      "required": [
+        "entity",
+        "access",
+        "visit",
+        "lifetime"
+      ]
+    },
+    "mainAccessVisitConfig": {
+      "type": "object",
+      "properties": {
+        "free_entities_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "mainBucketConfig": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "percentage": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "access": {
+          "$ref": "#/definitions/mainAccessConfig"
+        }
+      }
+    },
+    "mainConfigResponse": {
+      "type": "object",
+      "example": {
+        "access": {
+          "visits": [
+            {
+              "free_entities_limit": 5
+            },
+            {
+              "free_entities_limit": 3
+            },
+            {
+              "free_entities_limit": 1
+            }
+          ],
+          "visit_duration": "5s",
+          "refresh_interval": "40s",
+          "lifetime_free_entities_limit": 10,
+          "metering_type": "PerVisit"
+        },
+        "mvt": {
+          "experiment_id": "exp1",
+          "enabled": true,
+          "buckets": [
+            {
+              "id": "b1",
+              "percentage": 40,
+              "access": {
+                "visits": [
+                  {
+                    "free_entities_limit": 10
+                  },
+                  {
+                    "free_entities_limit": 5
+                  }
+                ],
+                "visit_duration": "1234s",
+                "refresh_interval": null,
+                "lifetime_free_entities_limit": 0,
+                "metering_type": "PerVisit"
+              }
+            },
+            {
+              "id": "b2",
+              "percentage": 40,
+              "access": {
+                "visits": [
+                  {
+                    "free_entities_limit": 20
+                  },
+                  {
+                    "free_entities_limit": 15
+                  }
+                ],
+                "visit_duration": "1234s",
+                "refresh_interval": null,
+                "lifetime_free_entities_limit": 0,
+                "metering_type": "PerVisit"
+              }
+            }
+          ]
+        }
+      },
+      "properties": {
+        "access": {
+          "$ref": "#/definitions/mainAccessConfig"
+        },
+        "mvt": {
+          "$ref": "#/definitions/mainMVTConfig"
+        }
+      },
+      "description": "Contains service configuration such as number of visits, free articles per visit, visit duration an so on.",
+      "title": "ConfigResponse",
+      "required": [
+        "access"
+      ]
+    },
+    "mainCredentials": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "mainDeleteUserRequest": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        }
+      },
+      "description": "Provides user id to be deleted",
+      "title": "DeleteUserRequest"
+    },
+    "mainDenials": {
+      "type": "object",
+      "properties": {
+        "this_visit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "since_last_refresh": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "total": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "mainEntity": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "id": {
+          "type": "string"
+        }
+      },
+      "description": "Defines entity type (article, section) and unique ID.",
+      "title": "Entity",
+      "required": [
+        "type",
+        "id"
+      ]
+    },
+    "mainExperiment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "variant_id": {
+          "type": "string"
+        }
+      }
+    },
+    "mainHealthcheckResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        }
+      },
+      "description": "Contains service status - 'ok' if the service is working properly.",
+      "title": "HealthcheckResponse",
+      "required": [
+        "status"
+      ]
+    },
+    "mainLoginErrors": {
+      "type": "string",
+      "enum": [
+        "NONE",
+        "UNKNOWN",
+        "USERNAME_OR_PASSWORD_WRONG"
+      ],
+      "default": "NONE"
+    },
+    "mainLoginType": {
+      "type": "string",
+      "enum": [
+        "PASSWORD"
+      ],
+      "default": "PASSWORD"
+    },
+    "mainLoginUserRequest": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/mainLoginType"
+        },
+        "credentials": {
+          "$ref": "#/definitions/mainCredentials"
+        }
+      },
+      "description": "Defines a request for user registration",
+      "title": "RegisterUserRequest",
+      "required": [
+        "email",
+        "password"
+      ]
+    },
+    "mainLoginUserResponse": {
+      "type": "object",
+      "properties": {
+        "loginToken": {
+          "type": "string"
+        },
+        "error": {
+          "$ref": "#/definitions/mainLoginErrors"
+        }
+      },
+      "description": "Defines a response for user registration",
+      "title": "RegisterUserResponse"
+    },
+    "mainMVTConfig": {
+      "type": "object",
+      "properties": {
+        "experiment_id": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "buckets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/mainBucketConfig"
+          }
+        }
+      }
+    },
+    "mainMeteringType": {
+      "type": "string",
+      "enum": [
+        "PerVisit",
+        "PerLifetime"
+      ],
+      "default": "PerVisit"
+    },
+    "mainReason": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        }
+      },
+      "description": "Defines reason why access was granted or denied.",
+      "title": "Reason",
+      "required": [
+        "code"
+      ]
+    },
+    "mainRefreshType": {
+      "type": "string",
+      "enum": [
+        "Interval",
+        "CalendarDay"
+      ],
+      "default": "Interval"
+    },
+    "mainRegisterUserRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        }
+      },
+      "description": "Defines a request for user registration",
+      "title": "RegisterUserRequest",
+      "required": [
+        "email",
+        "password",
+        "username"
+      ]
+    },
+    "mainRegisterUserResponse": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "error": {
+          "$ref": "#/definitions/mainLoginErrors"
+        },
+        "user_id": {
+          "type": "string"
+        }
+      },
+      "description": "Defines a response for user registration",
+      "title": "RegisterUserResponse"
+    },
+    "mainResultResponse": {
+      "type": "object",
+      "properties": {
+        "is_success": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "mainVersionResponse": {
+      "type": "object",
+      "example": {
+        "version": "0.32.1",
+        "commit_hash": "3c85815431ab04f4c43074bd1648cc6b117a6e1b"
+      },
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "Semantic version number in a format `MAJOR.MINOR.PATCH`."
+        },
+        "commit_hash": {
+          "type": "string",
+          "description": "Git commit hash that is useful for analysing problems by the developers."
+        }
+      },
+      "description": "Defines response to a version request.",
+      "title": "VersionResponse",
+      "required": [
+        "version",
+        "commit_hash"
+      ]
+    },
+    "mainVisit": {
+      "type": "object",
+      "properties": {
+        "number": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Visit number. First visit is 1."
+        },
+        "used": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Number of used entity access requests (i.e. article views)."
+        },
+        "remaining": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Number of remaining entity access requests (i.e. article views)."
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Visit expiration date."
+        }
+      },
+      "description": "Defines visit number, used and remaining entity access requests (i.e. article views).",
+      "title": "Visit",
+      "required": [
+        "number",
+        "used",
+        "remaining"
+      ]
+    },
+    "mainVoid": {
+      "type": "object"
+    }
+  },
+  "externalDocs": {
+    "description": "More about MAIN",
+    "url": "https://github.com/newscorp-ghfb/main/blob/master/README.md"
+  }
+}

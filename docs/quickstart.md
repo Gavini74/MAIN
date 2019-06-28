@@ -1,11 +1,21 @@
 # Quick start
 
-## How to...
+### Get up and running, and start developing your MAIN integration.
 
-### Do something interesting
+Integrating MAIN into your app or website can begin as soon as...
+Three steps to get started:
+1. 
+2. 
+3. 
 
-XXX
+### Step 1. - 
+xxx
 
-### Do something else
+### Step 2. - 
+xxx
 
-XXX
+### Step 3. - 
+xxx
+
+## Next steps...
+xxx
